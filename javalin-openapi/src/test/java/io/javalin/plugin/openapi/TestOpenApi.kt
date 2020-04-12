@@ -3,7 +3,7 @@
  * Copyright 2017 David Åse
  * Licensed under Apache 2.0: https://github.com/tipsy/javalin/blob/master/LICENSE
  */
-package io.javalin.openapi
+package io.javalin.plugin.openapi
 
 import cc.vileda.openapi.dsl.*
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -13,9 +13,6 @@ import io.javalin.TestUtil
 import io.javalin.apibuilder.ApiBuilder.crud
 import io.javalin.apibuilder.CrudHandler
 import io.javalin.http.Context
-import io.javalin.plugin.openapi.JavalinOpenApi
-import io.javalin.plugin.openapi.OpenApiOptions
-import io.javalin.plugin.openapi.OpenApiPlugin
 import io.javalin.plugin.openapi.annotations.ContentType
 import io.javalin.plugin.openapi.annotations.HttpMethod
 import io.javalin.plugin.openapi.dsl.*

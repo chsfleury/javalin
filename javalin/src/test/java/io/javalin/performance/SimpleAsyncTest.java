@@ -34,7 +34,7 @@ public class SimpleAsyncTest {
 
         Javalin app = Javalin.create(c -> c.server(() -> new Server(threadPool))).start(0);
 
-        HttpUtil http = new HttpUtil(app);
+        HttpUtil http = new HttpUtil(app.port());
 
         app.get("/test-async", ctx -> ctx.result(getFuture()));
         app.get("/test-sync", ctx -> ctx.result(getBlockingResult()));

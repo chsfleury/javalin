@@ -1,4 +1,4 @@
-package io.javalin.openapi
+package io.javalin.plugin.openapi
 
 import io.javalin.Javalin
 import io.javalin.plugin.openapi.JavalinOpenApi

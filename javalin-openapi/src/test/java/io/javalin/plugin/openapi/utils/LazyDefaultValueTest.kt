@@ -1,4 +1,4 @@
-package io.javalin.openapi.utils
+package io.javalin.plugin.openapi.utils
 
 import io.javalin.plugin.openapi.utils.LazyDefaultValue
 import org.assertj.core.api.Assertions.assertThat

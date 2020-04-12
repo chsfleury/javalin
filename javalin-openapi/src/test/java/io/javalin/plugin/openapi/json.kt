@@ -1,7 +1,7 @@
 /**
  * This file contains the json definitions required for the test
  */
-package io.javalin.openapi
+package io.javalin.plugin.openapi
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature

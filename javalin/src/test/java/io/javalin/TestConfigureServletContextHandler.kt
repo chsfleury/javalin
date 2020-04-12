@@ -42,7 +42,7 @@ class TestConfigureServletContextHandler {
             }
         }.start(0)
 
-        val http = HttpUtil(app)
+        val http = HttpUtil(app.port())
         http.htmlGet("/");
 
         assertThat(listener.called).isTrue()

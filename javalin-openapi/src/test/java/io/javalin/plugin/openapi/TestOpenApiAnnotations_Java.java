@@ -1,4 +1,4 @@
-package io.javalin.openapi;
+package io.javalin.plugin.openapi;
 
 import io.javalin.Javalin;
 import io.javalin.apibuilder.ApiBuilder;
@@ -6,9 +6,6 @@ import io.javalin.apibuilder.CrudHandler;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import io.javalin.misc.TestLoggingUtilKt;
-import io.javalin.plugin.openapi.JavalinOpenApi;
-import io.javalin.plugin.openapi.OpenApiOptions;
-import io.javalin.plugin.openapi.OpenApiPlugin;
 import io.javalin.plugin.openapi.annotations.HttpMethod;
 import io.javalin.plugin.openapi.annotations.OpenApi;
 import io.javalin.plugin.openapi.annotations.OpenApiContent;

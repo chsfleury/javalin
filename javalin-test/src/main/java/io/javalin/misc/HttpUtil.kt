@@ -9,27 +9,24 @@ package io.javalin.misc
 import com.mashape.unirest.http.HttpMethod
 import com.mashape.unirest.http.Unirest
 import com.mashape.unirest.request.HttpRequestWithBody
-import io.javalin.Javalin
-import io.javalin.core.util.Header
 import org.apache.http.impl.client.HttpClients
 
-class HttpUtil(javalin: Javalin) {
+class HttpUtil(port: Int) {
 
     @JvmField
-    val origin: String = "http://localhost:" + javalin.port()
+    val origin: String = "http://localhost:$port"
 
     fun enableUnirestRedirects() = Unirest.setHttpClient(HttpClients.custom().build())
     fun disableUnirestRedirects() = Unirest.setHttpClient(HttpClients.custom().disableRedirectHandling().build())
 
     // Unirest
-
     fun get(path: String) = Unirest.get(origin + path).asString()
     fun getBody(path: String) = Unirest.get(origin + path).asString().body
     fun getBody(path: String, headers: Map<String, String>) = Unirest.get(origin + path).headers(headers).asString().body
     fun post(path: String) = Unirest.post(origin + path)
     fun call(method: HttpMethod, pathname: String) = HttpRequestWithBody(method, origin + pathname).asString()
-    fun htmlGet(path: String) = Unirest.get(origin + path).header(Header.ACCEPT, "text/html").asString()
-    fun jsonGet(path: String) = Unirest.get(origin + path).header(Header.ACCEPT, "application/json").asString()
+    fun htmlGet(path: String) = Unirest.get(origin + path).header("Accept", "text/html").asString()
+    fun jsonGet(path: String) = Unirest.get(origin + path).header("Accept", "application/json").asString()
     fun sse(path: String) = Unirest.get(origin + path).header("Accept", "text/event-stream").header("Connection", "keep-alive").header("Cache-Control", "no-cache").asStringAsync()
 
 }

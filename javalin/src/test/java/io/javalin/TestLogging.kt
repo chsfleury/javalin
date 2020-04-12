@@ -49,8 +49,8 @@ class TestLogging {
             ctx.result(future)
         }
         app.start(0)
-        assertThat(HttpUtil(app).getBody("/async")).isEqualTo("Hello Async World!")
-        assertThat(HttpUtil(app).getBody("/blocking")).isEqualTo("Hello Blocking World!")
+        assertThat(HttpUtil(app.port()).getBody("/async")).isEqualTo("Hello Async World!")
+        assertThat(HttpUtil(app.port()).getBody("/blocking")).isEqualTo("Hello Blocking World!")
         app.stop()
     }
 

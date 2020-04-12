@@ -3,6 +3,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>javalin</module>
+        <module>javalin-openapi</module>
+        <module>javalin-test</module>
     </modules>
 
     <parent>
@@ -141,6 +143,11 @@
                 <groupId>com.nixxcode.jvmbrotli</groupId>
                 <artifactId>jvmbrotli</artifactId>
                 <version>${jvmbrotli.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

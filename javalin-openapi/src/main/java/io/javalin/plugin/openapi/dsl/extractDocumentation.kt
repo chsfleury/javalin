@@ -4,17 +4,9 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.CrudFunctionHandler
 import io.javalin.core.event.HandlerMetaInfo
 import io.javalin.core.util.OptionalDependency
+import io.javalin.core.util.Reflection.Companion.rfl
 import io.javalin.core.util.Util
-import io.javalin.core.util.getFieldValue
-import io.javalin.core.util.getMethodByName
-import io.javalin.core.util.isClass
-import io.javalin.core.util.isJavaAnonymousLambda
-import io.javalin.core.util.isJavaNonStaticMethodReference
-import io.javalin.core.util.isKotlinAnonymousLambda
-import io.javalin.core.util.isKotlinMethodReference
-import io.javalin.core.util.lambdaField
 import io.javalin.core.util.methodReferenceReflectionMethodName
-import io.javalin.core.util.methodsNotDeclaredByObject
 import io.javalin.plugin.openapi.CreateSchemaOptions
 import io.javalin.plugin.openapi.annotations.OpenApi
 import io.javalin.plugin.openapi.annotations.asOpenApiDocumentation
@@ -33,8 +25,8 @@ fun HandlerMetaInfo.extractDocumentation(options: CreateSchemaOptions): OpenApiD
     options.default?.apply(documentation)
 
     val userDocumentation: OpenApiDocumentation = when (handler) {
-        is DocumentedHandler -> handler.documentation
-        is CrudFunctionHandler -> extractDocumentationFromCrudHandler(handler)
+        is DocumentedHandler -> (handler as DocumentedHandler).documentation
+        is CrudFunctionHandler -> extractDocumentationFromCrudHandler(handler as CrudFunctionHandler)
         else -> {
             val openApiAnnotation: OpenApi? = getOpenApiAnnotationFromReference() ?: getOpenApiAnnotationFromHandler()
             openApiAnnotation?.asOpenApiDocumentation()
@@ -48,13 +40,13 @@ fun HandlerMetaInfo.extractDocumentation(options: CreateSchemaOptions): OpenApiD
     return documentation
 }
 
-private fun HandlerMetaInfo.extractDocumentationFromCrudHandler(handler: CrudFunctionHandler): OpenApiDocumentation {
+private fun extractDocumentationFromCrudHandler(handler: CrudFunctionHandler): OpenApiDocumentation {
     val crudHandler = handler.crudHandler
     return if (crudHandler is DocumentedCrudHandler) {
         crudHandler.crudHandlerDocumentation.asMap()[handler.function]
                 ?: throw IllegalStateException("No documentation for this function")
     } else {
-        val method = handler.crudHandler::class.java.getMethodByName(handler.function.value) ?: throw NoSuchMethodException(handler.function.value)
+        val method = rfl(handler.crudHandler).getMethodByName(handler.function.value) ?: throw NoSuchMethodException(handler.function.value)
         val openApi: OpenApi? = method.getDeclaredAnnotation(OpenApi::class.java)
         openApi?.asOpenApiDocumentation()
                 ?: document()
@@ -75,7 +67,7 @@ private fun HandlerMetaInfo.extractDocumentationWithPathScanning(options: Create
 private fun HandlerMetaInfo.getOpenApiAnnotationFromReference(): OpenApi? {
     return try {
         methodReferenceOfHandler?.getOpenApiAnnotation()
-                ?: handler.lambdaField?.getOpenApiAnnotation()
+                ?: rfl(handler).lambdaField?.getOpenApiAnnotation()
     } catch (e: NoSuchFieldException) {
         null
     } catch (e: Error) {
@@ -92,7 +84,7 @@ private fun HandlerMetaInfo.getOpenApiAnnotationFromReference(): OpenApi? {
 
 private fun HandlerMetaInfo.getOpenApiAnnotationFromHandler(): OpenApi? {
     return try {
-        val method = handler::class.java.getMethodByName("handle")!!
+        val method = rfl(handler).getMethodByName("handle")!!
         method.getOpenApiAnnotation()
     } catch (e: NullPointerException) {
         null
@@ -100,26 +92,29 @@ private fun HandlerMetaInfo.getOpenApiAnnotationFromHandler(): OpenApi? {
 }
 
 private val HandlerMetaInfo.methodReferenceOfHandler: Method?
-    get() = when {
-        handler.isClass -> (handler as Class<*>).methods[0]
-        handler.isKotlinMethodReference -> {
-            val functionValue = handler.getFieldValue("function") as KFunction<*>
-            functionValue.javaMethod
+    get() = rfl(handler).let { handlerReflection ->
+        when {
+            handlerReflection.isClass -> (handler as Class<*>).methods[0]
+            handlerReflection.isKotlinMethodReference -> {
+                val functionValue = handlerReflection.getFieldValue("function") as KFunction<*>
+                functionValue.javaMethod
+            }
+            handlerReflection.isKotlinAnonymousLambda -> null // Cannot be parsed
+            handlerReflection.isJavaNonStaticMethodReference -> methodReferenceOfNonStaticJavaHandler
+            handlerReflection.isJavaAnonymousLambda -> null // Cannot be parsed
+            else -> null
         }
-        handler.isKotlinAnonymousLambda -> null // Cannot be parsed
-        handler.isJavaNonStaticMethodReference -> methodReferenceOfNonStaticJavaHandler
-        handler.isJavaAnonymousLambda -> null // Cannot be parsed
-        else -> null
     }
 
 private val HandlerMetaInfo.methodReferenceOfNonStaticJavaHandler: Method?
     get() {
-        val handlerParentClass = handler.javaClass
+        val handlerParentClass = rfl(handler)
                 .getMethodByName(methodReferenceReflectionMethodName)
                 ?.parameters?.get(0)
                 ?.parameterizedType as Class<*>?
 
         val methods = handlerParentClass
+                ?.let { rfl(it) }
                 ?.methodsNotDeclaredByObject
                 ?: arrayOf()
 
